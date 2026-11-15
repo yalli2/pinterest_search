@@ -133,10 +133,12 @@ cursor:grab;box-shadow:0 10px 24px -12px var(--acc)}
   <div class="row">
     <button class="btn ok" id="zipBtn" onclick="downloadZip()">선택 이미지 ZIP 다운로드</button>
     <button class="btn g" onclick="saveList()">주소 목록 .txt 저장</button>
-    <button class="btn g" onclick="saveScript()">일괄 다운로드 스크립트(.sh) 저장</button>
+    <button class="btn g" onclick="saveBat()">Windows 일괄 다운로드(.bat) 저장</button>
+    <button class="btn g" onclick="saveScript()">Mac·Linux 스크립트(.sh) 저장</button>
   </div>
   <div class="bar"><i id="pb"></i></div>
   <div class="stat" id="log">대기 중</div>
+  <div class="note"><b>ZIP이 실패하면?</b> Pinterest 이미지 서버는 브라우저의 교차 출처 요청을 막습니다. 이 사이트는 이미지 프록시를 자동으로 시도하지만, 그래도 막히면 <b>[Windows 일괄 다운로드(.bat) 저장]</b>을 누르세요. 받은 <code>download.bat</code>을 원하는 폴더에 두고 더블클릭하면 <code>pinterest_vocab</code> 폴더에 전부 저장됩니다. (Windows 10/11은 curl이 기본 내장되어 있어 추가 설치가 필요 없습니다.)</div>
   <div class="note red"><b>저작권 안내</b> — 수집한 이미지는 각 제작자에게 저작권이 있습니다. 수업 내 참고·개인 학습용으로만 사용하고, 교재·홈페이지·SNS 등에 재배포하거나 상업적으로 사용하지 마세요. 필요하면 수집한 이미지를 <b>참고 자료</b>로만 보고 직접 제작한 그림/사진으로 대체하는 것이 안전합니다.</div>
 </div>
 
@@ -226,10 +228,22 @@ function tgt(u){return document.getElementById('hi').checked?hi(u):mid(u)}
 function setP(p){document.getElementById('pb').style.width=p+'%'}
 function say(t){document.getElementById('log').innerHTML=t}
 
+/* i.pinimg.com 은 CORS 헤더를 주지 않으므로 이미지 프록시를 경유해 받는다 */
+function cands(u){
+ const direct=[tgt(u),mid(u),u];
+ const px=[];
+ direct.forEach(d=>{
+  const bare=d.replace(/^https?:\/\//,'');
+  px.push('https://wsrv.nl/?url='+encodeURIComponent(bare)+'&n=-1');
+  px.push('https://corsproxy.io/?url='+encodeURIComponent(d));
+  px.push('https://api.allorigins.win/raw?url='+encodeURIComponent(d));
+ });
+ return direct.concat(px);
+}
 async function grab(u){
- for(const cand of [tgt(u),mid(u),u]){
+ for(const cand of cands(u)){
   try{const r=await fetch(cand,{mode:'cors'});if(r.ok){const b=await r.blob();
-   if(b.size>1000)return{blob:b,url:cand}}}catch(e){}
+   if(b.size>1000&&/image/i.test(b.type||'image'))return{blob:b,url:cand}}}catch(e){}
  }
  return null;
 }
@@ -246,7 +260,7 @@ async function downloadZip(){
   else fail.push(list[i].url);
  }
  setP(100);
- if(!ok){say('⚠ 브라우저 보안(CORS)으로 모든 이미지를 직접 받지 못했습니다. 아래 <b>.sh 스크립트</b> 또는 <b>.txt 목록</b>을 사용해 주세요.');
+ if(!ok){say('⚠ 프록시까지 모두 막혔습니다. 아래 <b>Windows .bat</b> 버튼으로 받으세요 — 가장 확실한 방법입니다.');
   btn.disabled=false;return}
  say(`ZIP 생성 중… (${ok}개)`);
  const blob=await zip.generateAsync({type:'blob'});
@@ -259,6 +273,13 @@ function dl(name,text){const b=new Blob([text],{type:'text/plain'});
  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click()}
 function saveList(){const l=picked();if(!l.length)return alert('선택된 이미지가 없습니다.');
  dl('pinterest_urls.txt',l.map(x=>tgt(x.url)).join('\n'))}
+function saveBat(){const l=picked();if(!l.length)return alert('선택된 이미지가 없습니다.');
+ const s='@echo off\r\nchcp 65001 >nul\r\nREM 사용법: 이 파일을 원하는 폴더에 두고 더블클릭하세요.\r\n'
+  +'if not exist pinterest_vocab mkdir pinterest_vocab\r\ncd pinterest_vocab\r\n'
+  +l.map((x,i)=>`curl -sSL -o ${String(i+1).padStart(3,'0')}.jpg "${tgt(x.url)}"`).join('\r\n')
+  +'\r\necho.\r\necho 완료! pinterest_vocab 폴더를 확인하세요.\r\npause\r\n';
+ const b=new Blob([s],{type:'application/octet-stream'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='download.bat';a.click()}
 function saveScript(){const l=picked();if(!l.length)return alert('선택된 이미지가 없습니다.');
  const s='#!/bin/bash\n# 사용법: bash download.sh  (curl 필요)\nmkdir -p pinterest_vocab && cd pinterest_vocab\n'
   +l.map((x,i)=>`curl -sSL -o ${String(i+1).padStart(3,'0')}.jpg "${tgt(x.url)}"`).join('\n')
