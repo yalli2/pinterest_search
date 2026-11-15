@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pinterest 스페인어 어휘 이미지 수집기 | 후안샘</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#0e1020;--bg2:#161a33;--card:#1c2142;--line:#2c3360;
+--txt:#eef0ff;--dim:#9aa3ce;--acc:#e60023;--acc2:#ff5a6e;--ok:#35d49a;--warn:#ffc53d;
+}
+body{font-family:'Pretendard','Malgun Gothic',-apple-system,sans-serif;background:
+radial-gradient(1200px 600px at 10% -10%,#2a1b4d 0%,transparent 60%),
+radial-gradient(900px 500px at 90% 0%,#4a0f1c 0%,transparent 55%),var(--bg);
+color:var(--txt);min-height:100vh;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 18px 80px}
+header{text-align:center;padding:30px 0 22px}
+.logo{display:inline-flex;align-items:center;gap:10px;font-size:13px;letter-spacing:2px;
+color:var(--dim);border:1px solid var(--line);padding:6px 14px;border-radius:30px;margin-bottom:16px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 12px var(--acc)}
+h1{font-size:clamp(26px,4.4vw,42px);font-weight:800;line-height:1.25;
+background:linear-gradient(100deg,#fff 10%,var(--acc2) 90%);-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:var(--dim);margin-top:12px;font-size:15px}
+.card{background:linear-gradient(160deg,var(--card),var(--bg2));border:1px solid var(--line);
+border-radius:18px;padding:22px;margin-top:22px;box-shadow:0 18px 40px -24px #000}
+.step{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+.num{width:30px;height:30px;flex:0 0 30px;border-radius:9px;background:var(--acc);
+display:grid;place-items:center;font-weight:800;font-size:14px}
+.step h2{font-size:18px;font-weight:700}
+.step small{display:block;color:var(--dim);font-weight:400;font-size:12.5px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.chip{background:#ffffff0d;border:1px solid var(--line);color:var(--txt);padding:8px 13px;
+border-radius:30px;font-size:13.5px;cursor:pointer;transition:.18s;font-family:inherit}
+.chip:hover{background:var(--acc);border-color:var(--acc);transform:translateY(-2px)}
+.chip.on{background:var(--acc);border-color:var(--acc)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+input[type=text],textarea{width:100%;background:#0b0d1c;border:1px solid var(--line);
+color:var(--txt);border-radius:12px;padding:12px 14px;font-family:inherit;font-size:14px}
+textarea{min-height:120px;resize:vertical;font-family:ui-monospace,Menlo,monospace;font-size:12px}
+input:focus,textarea:focus{outline:none;border-color:var(--acc2)}
+.btn{background:var(--acc);color:#fff;border:none;border-radius:11px;padding:11px 18px;
+font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.18s}
+.btn:hover{background:#ff2d45;transform:translateY(-2px)}
+.btn.g{background:#ffffff12;border:1px solid var(--line)}
+.btn.g:hover{background:#ffffff22}
+.btn.ok{background:var(--ok);color:#06231a}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+pre.code{background:#07091a;border:1px solid var(--line);border-radius:12px;padding:13px;
+font-size:11.5px;overflow-x:auto;color:#b9c4ff;max-height:150px;white-space:pre-wrap;word-break:break-all}
+.note{background:#ffc53d14;border-left:3px solid var(--warn);border-radius:0 10px 10px 0;
+padding:11px 14px;font-size:13px;color:#ffe2a8;margin-top:12px}
+.note.red{background:#e6002314;border-color:var(--acc);color:#ffc0c8}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:16px}
+.thumb{position:relative;aspect-ratio:3/4;border-radius:11px;overflow:hidden;
+border:2px solid var(--line);background:#0b0d1c;cursor:pointer}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb.sel{border-color:var(--ok);box-shadow:0 0 0 3px #35d49a33}
+.thumb .mk{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;
+background:#000a;display:grid;place-items:center;font-size:12px}
+.thumb.sel .mk{background:var(--ok);color:#06231a;font-weight:900}
+.bar{height:8px;background:#0b0d1c;border-radius:10px;overflow:hidden;margin-top:12px;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--acc),var(--ok));transition:.3s}
+.stat{color:var(--dim);font-size:13px;margin-top:8px}
+footer{text-align:center;color:var(--dim);font-size:12.5px;margin-top:40px;line-height:1.9}
+a{color:var(--acc2)}
+.bm{display:inline-block;background:linear-gradient(135deg,var(--acc),#8b1038);color:#fff;
+padding:11px 20px;border-radius:11px;font-weight:800;text-decoration:none;font-size:14px;
+cursor:grab;box-shadow:0 10px 24px -12px var(--acc)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="logo"><span class="dot"></span>DAIN EDU · 후안샘</div>
+  <h1>Pinterest 스페인어 어휘 이미지<br>검색 &amp; 일괄 다운로드</h1>
+  <p class="sub">주제별 검색 → 페이지에서 이미지 자동 수집 → 원본 해상도로 ZIP 한 번에 저장</p>
+</header>
+
+<!-- STEP 1 -->
+<div class="card">
+  <div class="step"><div class="num">1</div><div><h2>어휘 주제 검색</h2>
+  <small>버튼을 누르면 Pinterest 검색 결과가 새 탭에서 열립니다</small></div></div>
+  <div class="chips" id="cats"></div>
+  <div class="row">
+    <input type="text" id="q" placeholder="직접 검색어 입력 (예: vocabulario español cocina infografía)">
+    <button class="btn" onclick="openSearch(document.getElementById('q').value)">검색 열기</button>
+  </div>
+  <div class="note">팁: 검색 결과 탭에서 <b>아래로 충분히 스크롤</b>해야 이미지가 많이 불러와집니다. 수집기가 자동 스크롤도 해 줍니다.</div>
+</div>
+
+<!-- STEP 2 -->
+<div class="card">
+  <div class="step"><div class="num">2</div><div><h2>이미지 주소 수집</h2>
+  <small>Pinterest 탭에서 수집기를 실행하면 이미지 주소가 클립보드에 복사됩니다</small></div></div>
+  <div class="row">
+    <label class="stat">자동 스크롤 횟수
+      <input type="text" id="rounds" value="12" style="width:70px;display:inline-block;margin-left:6px;text-align:center">
+    </label>
+    <button class="btn g" onclick="copySnippet()">수집기 코드 복사</button>
+    <a class="bm" id="bmlet" href="#" title="이 버튼을 북마크바로 드래그하세요">📌 Pin 수집기 (북마크바로 드래그)</a>
+  </div>
+  <div class="note">
+    <b>방법 A (북마크릿)</b> — 위 빨간 버튼을 브라우저 북마크바로 드래그 → Pinterest 검색 탭에서 클릭.<br>
+    <b>방법 B (콘솔, 가장 확실함)</b> — [수집기 코드 복사] → Pinterest 탭에서 <b>F12</b> → Console 탭 → 붙여넣고 Enter.
+    (Chrome이 경고하면 <code>allow pasting</code> 입력 후 Enter)
+  </div>
+  <pre class="code" id="snip"></pre>
+</div>
+
+<!-- STEP 3 -->
+<div class="card">
+  <div class="step"><div class="num">3</div><div><h2>주소 붙여넣고 미리보기</h2>
+  <small>수집된 주소를 붙여넣으면 썸네일로 확인하고 필요한 것만 고를 수 있습니다</small></div></div>
+  <textarea id="urls" placeholder="https://i.pinimg.com/... 형식의 주소를 붙여넣으세요 (줄바꿈 구분)"></textarea>
+  <div class="row">
+    <button class="btn" onclick="parseUrls()">불러오기</button>
+    <button class="btn g" onclick="selAll(true)">전체 선택</button>
+    <button class="btn g" onclick="selAll(false)">전체 해제</button>
+    <button class="btn g" onclick="dropSel()">선택 항목 제거</button>
+    <label class="stat"><input type="checkbox" id="hi" checked> 원본(originals) 해상도로 받기</label>
+  </div>
+  <div class="stat" id="count">불러온 이미지 0개</div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- STEP 4 -->
+<div class="card">
+  <div class="step"><div class="num">4</div><div><h2>일괄 다운로드</h2>
+  <small>ZIP 한 파일로 저장합니다. 차단된 이미지는 목록/스크립트로 받으세요</small></div></div>
+  <div class="row">
+    <button class="btn ok" id="zipBtn" onclick="downloadZip()">선택 이미지 ZIP 다운로드</button>
+    <button class="btn g" onclick="saveList()">주소 목록 .txt 저장</button>
+    <button class="btn g" onclick="saveScript()">일괄 다운로드 스크립트(.sh) 저장</button>
+  </div>
+  <div class="bar"><i id="pb"></i></div>
+  <div class="stat" id="log">대기 중</div>
+  <div class="note red"><b>저작권 안내</b> — 수집한 이미지는 각 제작자에게 저작권이 있습니다. 수업 내 참고·개인 학습용으로만 사용하고, 교재·홈페이지·SNS 등에 재배포하거나 상업적으로 사용하지 마세요. 필요하면 수집한 이미지를 <b>참고 자료</b>로만 보고 직접 제작한 그림/사진으로 대체하는 것이 안전합니다.</div>
+</div>
+
+<footer>
+  다인에듀(다인원격평생교육직업학원) · 후안샘 스페인어<br>
+  <a href="https://www.dainedu.net" target="_blank">www.dainedu.net</a>
+</footer>
+</div>
+
+<script>
+/* ---------- 주제 프리셋 ---------- */
+const CATS=[
+ ["가족","vocabulario español la familia infografía"],
+ ["음식","vocabulario español la comida infografía"],
+ ["과일·채소","vocabulario español frutas y verduras ilustración"],
+ ["색깔","vocabulario español los colores para niños"],
+ ["숫자","vocabulario español los números ilustración"],
+ ["옷","vocabulario español la ropa infografía"],
+ ["신체","vocabulario español partes del cuerpo ilustración"],
+ ["동물","vocabulario español los animales infografía"],
+ ["집·가구","vocabulario español la casa los muebles infografía"],
+ ["직업","vocabulario español las profesiones ilustración"],
+ ["감정","vocabulario español las emociones sentimientos"],
+ ["날씨","vocabulario español el tiempo clima infografía"],
+ ["도시·장소","vocabulario español la ciudad lugares infografía"],
+ ["교통","vocabulario español medios de transporte ilustración"],
+ ["학교","vocabulario español útiles escolares infografía"],
+ ["스포츠","vocabulario español los deportes ilustración"],
+ ["자연","vocabulario español la naturaleza infografía"],
+ ["일상·루틴","vocabulario español rutina diaria verbos infografía"],
+ ["동사","verbos en español infografía ilustrados"],
+ ["전치사","preposiciones de lugar español infografía"],
+ ["인사말","saludos y despedidas español infografía"],
+ ["시간","la hora en español infografía"],
+];
+const cw=document.getElementById('cats');
+CATS.forEach(([k,q])=>{const b=document.createElement('button');b.className='chip';
+b.textContent=k;b.onclick=()=>openSearch(q);cw.appendChild(b)});
+function openSearch(q){if(!q||!q.trim())return;
+window.open('https://www.pinterest.com/search/pins/?q='+encodeURIComponent(q.trim()),'_blank')}
+
+/* ---------- 수집기 코드 ---------- */
+function snippet(){
+ const r=parseInt(document.getElementById('rounds').value)||10;
+ return "(async()=>{const m=new Map(),k=u=>{const x=u.match(/i\\.pinimg\\.com\\/[^\\/]+\\/(.+?\\.(?:jpg|jpeg|png|webp))/i);return x?x[1]:null},g=()=>{document.querySelectorAll('img').forEach(i=>{[i.src].concat((i.srcset||'').split(',').map(s=>s.trim().split(' ')[0])).forEach(u=>{if(!u||u.indexOf('i.pinimg.com')<0)return;const y=k(u);if(y&&!m.has(y))m.set(y,u)})})};g();for(let n=0;n<"+r+";n++){scrollBy(0,innerHeight*0.9);await new Promise(s=>setTimeout(s,900));g();console.log('수집 중... '+m.size)}const L=[...m.values()].join('\\n');try{await navigator.clipboard.writeText(L)}catch(e){}console.log(L);alert('이미지 '+m.size+'개 수집 완료 — 클립보드에 복사되었습니다.\\n수집기 사이트의 3단계에 붙여넣으세요.')})()";
+}
+function render(){document.getElementById('snip').textContent=snippet();
+document.getElementById('bmlet').href='javascript:'+encodeURIComponent(snippet())}
+document.getElementById('rounds').addEventListener('input',render);render();
+function copySnippet(){navigator.clipboard.writeText(snippet())
+ .then(()=>alert('수집기 코드를 복사했습니다.\nPinterest 탭에서 F12 → Console에 붙여넣고 Enter!'))
+ .catch(()=>alert('복사 실패 — 아래 코드 박스에서 직접 복사해 주세요.'))}
+
+/* ---------- 목록 파싱 ---------- */
+let items=[];
+const SZ=/i\.pinimg\.com\/(originals|\d+x\d*)\//i;
+function hi(u){return u.replace(/i\.pinimg\.com\/(originals|\d+x\d*)\//i,'i.pinimg.com/originals/')}
+function mid(u){return u.replace(/i\.pinimg\.com\/(originals|\d+x\d*)\//i,'i.pinimg.com/736x/')}
+function parseUrls(){
+ const raw=document.getElementById('urls').value;
+ const found=raw.match(/https?:\/\/i\.pinimg\.com\/[^\s"'<>)\]]+\.(?:jpg|jpeg|png|webp)/gi)||[];
+ const seen=new Set();items=[];
+ found.forEach(u=>{const m=u.match(/i\.pinimg\.com\/[^/]+\/(.+)$/i);const key=m?m[1]:u;
+  if(seen.has(key))return;seen.add(key);items.push({url:u,sel:true})});
+ draw();
+ if(!items.length)alert('i.pinimg.com 이미지 주소를 찾지 못했습니다. 2단계 수집기를 먼저 실행해 주세요.');
+}
+function draw(){
+ const g=document.getElementById('grid');g.innerHTML='';
+ items.forEach((it,i)=>{
+  const d=document.createElement('div');d.className='thumb'+(it.sel?' sel':'');
+  const img=document.createElement('img');img.loading='lazy';img.src=mid(it.url);
+  img.onerror=()=>{img.src=it.url};
+  const mk=document.createElement('div');mk.className='mk';mk.textContent=it.sel?'✓':'';
+  d.appendChild(img);d.appendChild(mk);
+  d.onclick=()=>{it.sel=!it.sel;draw()};
+  g.appendChild(d)});
+ const n=items.filter(x=>x.sel).length;
+ document.getElementById('count').textContent=`불러온 이미지 ${items.length}개 · 선택 ${n}개`;
+}
+function selAll(v){items.forEach(x=>x.sel=v);draw()}
+function dropSel(){items=items.filter(x=>!x.sel);draw()}
+
+/* ---------- 다운로드 ---------- */
+function picked(){return items.filter(x=>x.sel)}
+function tgt(u){return document.getElementById('hi').checked?hi(u):mid(u)}
+function setP(p){document.getElementById('pb').style.width=p+'%'}
+function say(t){document.getElementById('log').innerHTML=t}
+
+async function grab(u){
+ for(const cand of [tgt(u),mid(u),u]){
+  try{const r=await fetch(cand,{mode:'cors'});if(r.ok){const b=await r.blob();
+   if(b.size>1000)return{blob:b,url:cand}}}catch(e){}
+ }
+ return null;
+}
+async function downloadZip(){
+ const list=picked();
+ if(!list.length){alert('선택된 이미지가 없습니다.');return}
+ const btn=document.getElementById('zipBtn');btn.disabled=true;
+ const zip=new JSZip();let ok=0;const fail=[];
+ for(let i=0;i<list.length;i++){
+  say(`다운로드 중 ${i+1} / ${list.length} … 성공 ${ok}개`);setP((i/list.length)*100);
+  const r=await grab(list[i].url);
+  if(r){const ext=(r.url.match(/\.(jpg|jpeg|png|webp)/i)||[,'jpg'])[1];
+   zip.file(String(ok+1).padStart(3,'0')+'_pin.'+ext,r.blob);ok++}
+  else fail.push(list[i].url);
+ }
+ setP(100);
+ if(!ok){say('⚠ 브라우저 보안(CORS)으로 모든 이미지를 직접 받지 못했습니다. 아래 <b>.sh 스크립트</b> 또는 <b>.txt 목록</b>을 사용해 주세요.');
+  btn.disabled=false;return}
+ say(`ZIP 생성 중… (${ok}개)`);
+ const blob=await zip.generateAsync({type:'blob'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+ a.download='pinterest_vocab_'+new Date().toISOString().slice(0,10)+'.zip';a.click();
+ say(`✅ 완료 — ${ok}개 저장${fail.length?` · 실패 ${fail.length}개(스크립트로 받으세요)`:''}`);
+ btn.disabled=false;
+}
+function dl(name,text){const b=new Blob([text],{type:'text/plain'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click()}
+function saveList(){const l=picked();if(!l.length)return alert('선택된 이미지가 없습니다.');
+ dl('pinterest_urls.txt',l.map(x=>tgt(x.url)).join('\n'))}
+function saveScript(){const l=picked();if(!l.length)return alert('선택된 이미지가 없습니다.');
+ const s='#!/bin/bash\n# 사용법: bash download.sh  (curl 필요)\nmkdir -p pinterest_vocab && cd pinterest_vocab\n'
+  +l.map((x,i)=>`curl -sSL -o ${String(i+1).padStart(3,'0')}.jpg "${tgt(x.url)}"`).join('\n')
+  +'\necho "완료: $(ls | wc -l) 개 저장"\n';
+ dl('download.sh',s)}
+</script>
+</body>
+</html>
